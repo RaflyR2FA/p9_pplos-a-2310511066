@@ -1,9 +1,9 @@
 @echo off
-echo Mematikan semua Microservices...
+echo Mematikan Microservices Bus Ticketing...
 
-call pm2 stop all
-call pm2 delete all
+call pm2 stop api-gateway auth-service fleet-service booking-service ticket-worker
+call pm2 delete api-gateway auth-service fleet-service booking-service ticket-worker
 
 echo.
-echo Semua service telah dimatikan.
+echo Service Bus Ticketing telah dimatikan.
 pause

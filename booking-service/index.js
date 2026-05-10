@@ -51,6 +51,7 @@ app.post('/bookings', async (req, res) => {
     } catch (error) {
         await transaction.rollback();
         const [msg, status] = error.message.split('_');
+        console.error('Error saat membuat booking:', error);
         res.status(Number(status) || 500).json({ error: msg || 'Internal Server Error' });
     }
 });
@@ -149,4 +150,4 @@ app.delete('/bookings/:id', async (req, res) => {
     }
 });
 
-app.listen(8003, () => console.log('Booking Service berjalan di port 8003'));
+app.listen(6603, () => console.log('Booking Service berjalan di port 6603'));

@@ -193,4 +193,4 @@ app.delete('/schedules/:id', isAdmin, async (req, res) => {
     }
 });
 
-app.listen(8002, () => console.log('Fleet Service berjalan di port 8002'));
+app.listen(6602, () => console.log('Fleet Service berjalan di port 6602'));

@@ -24,8 +24,8 @@ const verifyToken = (req, res, next) => {
 
 app.use(verifyToken);
 
-app.use('/api/auth', createProxyMiddleware({ target: 'http://localhost:8001', changeOrigin: true }));
-app.use('/api/fleet', createProxyMiddleware({ target: 'http://localhost:8002', changeOrigin: true }));
-app.use('/api/bookings', createProxyMiddleware({ target: 'http://localhost:8003', changeOrigin: true }));
+app.use('/api/auth', createProxyMiddleware({ target: 'http://localhost:6601', changeOrigin: true }));
+app.use('/api/fleet', createProxyMiddleware({ target: 'http://localhost:6602', changeOrigin: true }));
+app.use('/api/bookings', createProxyMiddleware({ target: 'http://localhost:6603', changeOrigin: true }));
 
-app.listen(8000, () => console.log('API Gateway berjalan di port 8000'));
+app.listen(6600, () => console.log('API Gateway berjalan di port 6600'));

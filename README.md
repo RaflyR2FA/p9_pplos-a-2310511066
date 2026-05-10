@@ -6,10 +6,10 @@ Sistem ini adalah platform backend berbasis microservices untuk pemesanan tiket 
 
 Sistem ini memecah fungsionalitas menjadi beberapa layanan independen yang berkomunikasi melalui API Gateway dan Message Broker:
 
-1. API Gateway (Port 8000): Titik akses tunggal (Entry Point) untuk semua request client. Bertugas melakukan verifikasi JWT Token dan meneruskan request (reverse proxy) ke service yang sesuai.
-2. Auth/User Service (Port 8001): Menangani registrasi, login, autentikasi (bcrypt), dan manajemen profil pengguna.
-3. Fleet & Route Service (Port 8002): Mengelola entitas relasional armada (Bus), rute perjalanan (Relation), dan jadwal keberangkatan (Schedule). Hanya dapat dimodifikasi oleh Admin.
-4. Booking Service (Port 8003): Menangani transaksi pemesanan kursi oleh penumpang. Menggunakan Database Transaction untuk mencegah race-condition saat pemilihan kursi.
+1. API Gateway (Port 6600): Titik akses tunggal (Entry Point) untuk semua request client. Bertugas melakukan verifikasi JWT Token dan meneruskan request (reverse proxy) ke service yang sesuai.
+2. Auth/User Service (Port 6601): Menangani registrasi, login, autentikasi (bcrypt), dan manajemen profil pengguna.
+3. Fleet & Route Service (Port 6602): Mengelola entitas relasional armada (Bus), rute perjalanan (Relation), dan jadwal keberangkatan (Schedule). Hanya dapat dimodifikasi oleh Admin.
+4. Booking Service (Port 6603): Menangani transaksi pemesanan kursi oleh penumpang. Menggunakan Database Transaction untuk mencegah race-condition saat pemilihan kursi.
 5. Notification/Ticket Worker (Background Process): Consumer RabbitMQ yang berjalan asinkron untuk memproses antrean pembuatan tiket setelah pemesanan berhasil dicatat.
 
 ## Prasyarat (Prerequisites)
