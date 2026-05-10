@@ -1,0 +1,12 @@
+# Node modules
+**/node_modules/
+
+# Environment files
+**/.env
+**/.env.backup
+**/.env.production
+**/.env.example
+
+node_modules/
+.env
+.DS_Store

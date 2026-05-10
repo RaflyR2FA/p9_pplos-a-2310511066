@@ -1,0 +1,16 @@
+@echo off
+echo Memulai semua Microservices...
+
+call pm2 start api-gateway/index.js --name "api-gateway"
+call pm2 start user-service/index.js --name "auth-service"
+call pm2 start fleet-service/index.js --name "fleet-service"
+call pm2 start booking-service/index.js --name "booking-service"
+call pm2 start worker-service/worker.js --name "ticket-worker"
+
+call pm2 save
+
+echo.
+echo Semua service berhasil dijalankan! Gunakan perintah 'pm2 logs' untuk melihat log.
+call pm2 list
+echo.
+pause
