@@ -2,8 +2,8 @@
 
 echo "Mematikan Microservices Bus Ticketing..."
 
-pm2 stop api-gateway auth-service fleet-service booking-service ticket-worker
-pm2 delete api-gateway auth-service fleet-service booking-service ticket-worker
+pm2 stop api-gateway auth-service fleet-service booking-service ticket-worker expense-service
+pm2 delete api-gateway auth-service fleet-service booking-service ticket-worker expense-service
 
 echo ""
 echo "Service Bus Ticketing telah dimatikan."

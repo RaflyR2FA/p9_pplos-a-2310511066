@@ -8,6 +8,10 @@ pm2 start fleet-service/index.js --name "fleet-service"
 pm2 start booking-service/index.js --name "booking-service"
 pm2 start worker-service/worker.js --name "ticket-worker"
 
+cd expense-service || exit
+pm2 start artisan --name "expense-service" --interpreter php -- serve
+cd ..
+
 pm2 save
 
 echo ""

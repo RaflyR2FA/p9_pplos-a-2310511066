@@ -3,8 +3,15 @@ const path = require('path');
 require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const jwt = require('jsonwebtoken');
+const rateLimit = require('express-rate-limit');
 
 const app = express();
+
+const limiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 5,
+    message: { error: "Terlalu banyak permintaan, coba lagi nanti." }
+});
 
 const verifyToken = (req, res, next) => {
     if (req.path.startsWith('/api/auth/login') || req.path.startsWith('/api/auth/register')) {
@@ -22,10 +29,20 @@ const verifyToken = (req, res, next) => {
     }
 };
 
+const checkAdminOrCrew = (req, res, next) => {
+    const userRole = req.headers['x-user-role'];
+    if (userRole === 'Admin' || userRole === 'Crew') {
+        return next();
+    }
+    return res.status(403).json({ error: 'Akses ditolak. Fitur ini hanya untuk Admin dan Crew.' });
+};
+
+app.use(limiter);
 app.use(verifyToken);
 
 app.use('/api/auth', createProxyMiddleware({ target: 'http://localhost:6601', changeOrigin: true }));
 app.use('/api/fleet', createProxyMiddleware({ target: 'http://localhost:6602', changeOrigin: true }));
 app.use('/api/bookings', createProxyMiddleware({ target: 'http://localhost:6603', changeOrigin: true }));
+app.use('/api/expenses', checkAdminOrCrew, createProxyMiddleware({ target: 'http://localhost:6604/api/expenses', changeOrigin: true }));
 
 app.listen(6600, () => console.log('API Gateway berjalan di port 6600'));

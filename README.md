@@ -1,20 +1,22 @@
 # Sistem Manajemen Pemesanan Tiket Bus (Microservices)
 
-Sistem ini adalah platform backend berbasis microservices untuk pemesanan tiket bus. Dibangun menggunakan Node.js, Express, MySQL, dan RabbitMQ. Proyek ini merupakan pemenuhan tugas mata kuliah Pembangunan Perangkat Lunak Berorientasi Service oleh Rafly Dzakki Pratama (2310511066).
+Sistem ini adalah platform backend berbasis microservices untuk pemesanan tiket bus dan manajemen operasional. Dibangun menggunakan ekosistem multi-bahasa yang mencakup Node.js, Express, PHP (Laravel), MySQL, dan RabbitMQ. Proyek ini merupakan pemenuhan tugas mata kuliah Pembangunan Perangkat Lunak Berorientasi Service oleh Rafly Dzakki Pratama (2310511066).
 
 ## Arsitektur Sistem
 
 Sistem ini memecah fungsionalitas menjadi beberapa layanan independen yang berkomunikasi melalui API Gateway dan Message Broker:
 
-1. API Gateway (Port 6600): Titik akses tunggal (Entry Point) untuk semua request client. Bertugas melakukan verifikasi JWT Token dan meneruskan request (reverse proxy) ke service yang sesuai.
-2. Auth/User Service (Port 6601): Menangani registrasi, login, autentikasi (bcrypt), dan manajemen profil pengguna.
-3. Fleet & Route Service (Port 6602): Mengelola entitas relasional armada (Bus), rute perjalanan (Relation), dan jadwal keberangkatan (Schedule). Hanya dapat dimodifikasi oleh Admin.
-4. Booking Service (Port 6603): Menangani transaksi pemesanan kursi oleh penumpang. Menggunakan Database Transaction untuk mencegah race-condition saat pemilihan kursi.
-5. Notification/Ticket Worker (Background Process): Consumer RabbitMQ yang berjalan asinkron untuk memproses antrean pembuatan tiket setelah pemesanan berhasil dicatat.
+1. **API Gateway (Port 6600)**: Titik akses tunggal (Entry Point) untuk semua request client. Bertugas melakukan verifikasi JWT Token, menerapkan **Rate Limiting** (maksimal 5 request per menit), dan meneruskan request (reverse proxy) ke service yang sesuai.
+2. **Auth/User Service (Port 6601)**: Menangani registrasi, login, autentikasi (bcrypt), dan manajemen profil pengguna.
+3. **Fleet & Route Service (Port 6602)**: Mengelola entitas relasional armada (Bus), rute perjalanan (Relation), dan jadwal keberangkatan (Schedule). Hanya dapat dimodifikasi oleh Admin.
+4. **Booking Service (Port 6603)**: Menangani transaksi pemesanan kursi oleh penumpang. Menggunakan Database Transaction untuk mencegah race-condition saat pemilihan kursi.
+5. **Expense Service (Port 6604)**: Layanan berbasis PHP (Laravel) untuk mendata pengeluaran operasional perjalanan (tol, bensin, konsumsi kru, dll). Akses dibatasi hanya untuk Admin dan Crew.
+6. **Notification/Ticket Worker (Background Process)**: Consumer RabbitMQ yang berjalan asinkron untuk memproses antrean pembuatan tiket setelah pemesanan berhasil dicatat.
 
 ## Prasyarat (Prerequisites)
 
-- Node.js
+- Node.js (v16 atau lebih baru)
+- PHP (v8.1+) & Composer
 - MySQL Database
 - RabbitMQ Server (berjalan di localhost:5672)
 - PM2 (opsional, untuk menjalankan secara daemon)
@@ -23,14 +25,19 @@ Sistem ini memecah fungsionalitas menjadi beberapa layanan independen yang berko
 
 1. Clone repositori ini.
 2. Pastikan RabbitMQ dan MySQL sudah berjalan di sistem Anda.
-3. Konfigurasi koneksi database Anda di dalam `database/connect.js`.
-4. Instalasi dependensi: Jalankan `npm install` di setiap direktori service (`api-gateway`, `user-service`, `fleet-service`, `booking-service`, `worker-service`, dan `database`).
-5. Inisialisasi Database: Jalankan perintah berikut untuk membuat tabel dan mengisi data awal (seeder):
-   `node database/refresh.js`
-6. Jalankan Aplikasi:
+3. **Konfigurasi Database**:
+   - **Node.js**: Buka `database/connect.js` dan sesuaikan kredensial koneksi database MySQL Anda.
+   - **Laravel**: Masuk ke folder `expense-service`, salin file `.env.example` menjadi `.env`, lalu sesuaikan kredensial koneksi database Anda.
+4. **Instalasi Dependensi**: Jalankan skrip otomatis `install_deps.bat` (Windows) atau `./install_deps.sh` (Linux) di root folder untuk menginstal seluruh package Node dan PHP secara massal.
+5. **Inisialisasi Database (Seeder)**:
+   - **Layanan Utama (Node.js)**: Jalankan `node database/refresh.js`.
+   - **Layanan Pengeluaran (Laravel)**: Jalankan `refresh_expense.bat` (Windows) atau `./refresh_expense.sh` (Linux).
+6. **Jalankan Aplikasi**:
    - Windows: Jalankan file `start.bat`
    - Linux/Server: Jalankan `./start.sh`
    - Berhenti: Gunakan `stop.bat` (Windows) atau `./stop.sh` (Linux).
+
+---
 
 ## Daftar Endpoint & Contoh Request
 
@@ -183,3 +190,43 @@ Berikut adalah daftar endpoint lengkap yang tersedia di sistem ini.
 * **Delete Booking (Admin)**
     * **Method:** `DELETE`
     * **Endpoint:** `/api/bookings/bookings/1`
+
+### 4. Expense Service
+
+* **Create Expense (Admin/Crew)**
+    * **Method:** `POST`
+    * **Endpoint:** `/api/expenses`
+    * **Body (JSON):**
+        ```json
+        {
+            "schedule_id": 1,
+            "driver_id": 1,
+            "amount": 150000.00,
+            "type": "toll payments",
+            "details": "Pembayaran gerbang tol Cipali",
+            "datetime": "2026-05-10 12:00:00"
+        }
+        ```
+
+* **Get All Expenses (Admin/Crew)**
+    * **Method:** `GET`
+    * **Endpoint:** `/api/expenses`
+
+* **Get Expense by ID (Admin/Crew)**
+    * **Method:** `GET`
+    * **Endpoint:** `/api/expenses/1`
+
+* **Update Expense (Admin/Crew)**
+    * **Method:** `PUT`
+    * **Endpoint:** `/api/expenses/1`
+    * **Body (JSON):**
+        ```json
+        {
+            "amount": 250000.00,
+            "details": "Pembayaran tol Cipali + Cikampek"
+        }
+        ```
+
+* **Delete Expense (Admin/Crew)**
+    * **Method:** `DELETE`
+    * **Endpoint:** `/api/expenses/1`

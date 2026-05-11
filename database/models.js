@@ -6,14 +6,14 @@ const User = sequelize.define('User', {
     name: { type: DataTypes.STRING, allowNull: false },
     email: { type: DataTypes.STRING, allowNull: false, unique: true },
     password: { type: DataTypes.STRING, allowNull: false },
-    role: { type: DataTypes.ENUM('Admin', 'Passenger'), defaultValue: 'Passenger' }
+    role: { type: DataTypes.ENUM('Admin', 'Crew', 'Passenger'), defaultValue: 'Passenger' }
 });
 
 const Bus = sequelize.define('Bus', {
     id: { type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true },
     plate_number: { type: DataTypes.STRING, unique: true, allowNull: false },
     size: { type: DataTypes.ENUM('Mini', 'Medium', 'Big', 'Double Decker'), allowNull: false },
-    class: { type: DataTypes.ENUM('Ekonomi', 'VIP', 'Executive', 'Sleeper'), allowNull: false },
+    class: { type: DataTypes.ENUM('Economy', 'VIP', 'Executive', 'Sleeper'), allowNull: false },
     capacity: { type: DataTypes.INTEGER, allowNull: false }
 });
 

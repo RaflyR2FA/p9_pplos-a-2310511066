@@ -15,17 +15,20 @@ async function refreshDatabase() {
 
         await User.bulkCreate([
             { name: 'Admin Utama', email: 'admin1@bus.com', password: hashedPassword, role: 'Admin' },
-            { name: 'John Passenger', email: 'john@mail.com', password: hashedPassword, role: 'Passenger' },
-            { name: 'Rafly Dzakki Pratama', email: 'rafly@mail.com', password: hashedPassword, role: 'Passenger' }
+            { name: 'Budi Santoso', email: 'budi@mail.com', password: hashedPassword, role: 'Crew' },
+            { name: 'Joko Purwanto', email: 'joko@mail.com', password: hashedPassword, role: 'Crew' },
+            { name: 'Rafly Dzakki Pratama', email: 'rafly@mail.com', password: hashedPassword, role: 'Passenger' },
+            { name: 'John Doe', email: 'john@mail.com', password: hashedPassword, role: 'Passenger' },
+            { name: 'Jane Doe', email: 'jane@mail.com', password: hashedPassword, role: 'Passenger' },
         ]);
 
         const bus1 = await Bus.create({ plate_number: 'B 1234 XYZ', size: 'Big', class: 'Executive', capacity: 40 });
         const bus2 = await Bus.create({ plate_number: 'B 5678 ABC', size: 'Big', class: 'VIP', capacity: 30 });
-        const bus3 = await Bus.create({ plate_number: 'B 1234 DEF', size: 'Big', class: 'Ekonomi', capacity: 50 });
+        const bus3 = await Bus.create({ plate_number: 'B 1234 DEF', size: 'Big', class: 'Economy', capacity: 50 });
         const bus4 = await Bus.create({ plate_number: 'B 5678 GHI', size: 'Big', class: 'Sleeper', capacity: 10 });
         const bus5 = await Bus.create({ plate_number: 'B 4321 XYZ', size: 'Big', class: 'Executive', capacity: 40 });
         const bus6 = await Bus.create({ plate_number: 'B 8765 ABC', size: 'Big', class: 'VIP', capacity: 30 });
-        const bus7 = await Bus.create({ plate_number: 'B 4321 DEF', size: 'Big', class: 'Ekonomi', capacity: 50 });
+        const bus7 = await Bus.create({ plate_number: 'B 4321 DEF', size: 'Big', class: 'Economy', capacity: 50 });
         const bus8 = await Bus.create({ plate_number: 'B 8765 GHI', size: 'Big', class: 'Sleeper', capacity: 10 });
 
         const relation1 = await Relation.create({ origin: 'Jakarta', destination: 'Yogyakarta', distance_km: 550 });

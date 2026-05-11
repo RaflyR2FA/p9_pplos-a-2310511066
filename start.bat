@@ -7,6 +7,10 @@ call pm2 start fleet-service/index.js --name "fleet-service"
 call pm2 start booking-service/index.js --name "booking-service"
 call pm2 start worker-service/worker.js --name "ticket-worker"
 
+cd expense-service
+call pm2 start artisan --name "expense-service" --interpreter php -- serve
+cd ..
+
 call pm2 save
 
 echo.
