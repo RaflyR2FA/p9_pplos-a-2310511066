@@ -4,12 +4,15 @@ echo "Memulai semua Microservices..."
 
 pm2 start api-gateway/index.js --name "api-gateway"
 pm2 start user-service/index.js --name "auth-service"
-pm2 start fleet-service/index.js --name "fleet-service"
-pm2 start booking-service/index.js --name "booking-service"
+pm2 start fleet-booking-service/index.js --name "fleet-booking-service"
 pm2 start worker-service/worker.js --name "ticket-worker"
 
 cd expense-service || exit
 pm2 start artisan --name "expense-service" --interpreter php -- serve
+cd ..
+
+cd ml-service || exit
+pm2 start "venv/bin/python app.py" --name "ml-service"
 cd ..
 
 pm2 save

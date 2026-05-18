@@ -40,9 +40,9 @@ const checkAdminOrCrew = (req, res, next) => {
 app.use(limiter);
 app.use(verifyToken);
 
-app.use('/api/auth', createProxyMiddleware({ target: 'http://localhost:6601', changeOrigin: true }));
-app.use('/api/fleet', createProxyMiddleware({ target: 'http://localhost:6602', changeOrigin: true }));
-app.use('/api/bookings', createProxyMiddleware({ target: 'http://localhost:6603', changeOrigin: true }));
-app.use('/api/expenses', checkAdminOrCrew, createProxyMiddleware({ target: 'http://localhost:6604/api/expenses', changeOrigin: true }));
+app.use('/api/auth', createProxyMiddleware({ target: 'http://localhost:3137', changeOrigin: true }));
+app.use('/api/fleet', createProxyMiddleware({ target: 'http://localhost:3138', changeOrigin: true }));
+app.use('/api/expenses', checkAdminOrCrew, createProxyMiddleware({ target: 'http://localhost:3139/api/expenses', changeOrigin: true }));
+app.use('/api/ml', verifyToken, checkAdminOrCrew, createProxyMiddleware({ target: 'http://localhost:3140', changeOrigin: true, pathRewrite: { '^/api/ml': '' }}));
 
-app.listen(6600, () => console.log('API Gateway berjalan di port 6600'));
+app.listen(3136, () => console.log('API Gateway berjalan di port 3136'));

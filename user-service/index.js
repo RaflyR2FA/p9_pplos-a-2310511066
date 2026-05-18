@@ -29,4 +29,4 @@ app.get('/me', async (req, res) => {
     res.status(200).json({ user });
 });
 
-app.listen(6601, () => console.log('Auth Service berjalan di port 6601'));
+app.listen(3137, () => console.log('Auth Service berjalan di port 3137'));

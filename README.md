@@ -1,22 +1,23 @@
 # Sistem Manajemen Pemesanan Tiket Bus (Microservices)
 
-Sistem ini adalah platform backend berbasis microservices untuk pemesanan tiket bus dan manajemen operasional. Dibangun menggunakan ekosistem multi-bahasa yang mencakup Node.js, Express, PHP (Laravel), MySQL, dan RabbitMQ. Proyek ini merupakan pemenuhan tugas mata kuliah Pembangunan Perangkat Lunak Berorientasi Service oleh Rafly Dzakki Pratama (2310511066).
+Sistem ini adalah platform backend berbasis microservices untuk pemesanan tiket bus dan manajemen operasional. Dibangun menggunakan ekosistem multi-bahasa yang mencakup Node.js, Express, PHP (Laravel), Python (Flask/Scikit-learn), MySQL, dan RabbitMQ. Proyek ini merupakan pemenuhan tugas mata kuliah Pembangunan Perangkat Lunak Berorientasi Service oleh Rafly Dzakki Pratama (2310511066).
 
 ## Arsitektur Sistem
 
 Sistem ini memecah fungsionalitas menjadi beberapa layanan independen yang berkomunikasi melalui API Gateway dan Message Broker:
 
-1. **API Gateway (Port 6600)**: Titik akses tunggal (Entry Point) untuk semua request client. Bertugas melakukan verifikasi JWT Token, menerapkan **Rate Limiting** (maksimal 5 request per menit), dan meneruskan request (reverse proxy) ke service yang sesuai.
-2. **Auth/User Service (Port 6601)**: Menangani registrasi, login, autentikasi (bcrypt), dan manajemen profil pengguna.
-3. **Fleet & Route Service (Port 6602)**: Mengelola entitas relasional armada (Bus), rute perjalanan (Relation), dan jadwal keberangkatan (Schedule). Hanya dapat dimodifikasi oleh Admin.
-4. **Booking Service (Port 6603)**: Menangani transaksi pemesanan kursi oleh penumpang. Menggunakan Database Transaction untuk mencegah race-condition saat pemilihan kursi.
-5. **Expense Service (Port 6604)**: Layanan berbasis PHP (Laravel) untuk mendata pengeluaran operasional perjalanan (tol, bensin, konsumsi kru, dll). Akses dibatasi hanya untuk Admin dan Crew.
+1. **API Gateway (Port 3136)**: Titik akses tunggal (Entry Point) untuk semua request client. Bertugas melakukan verifikasi JWT Token, menerapkan **Rate Limiting** (maksimal 5 request per menit), dan meneruskan request (reverse proxy) ke service yang sesuai.
+2. **Auth/User Service (Port 3137)**: Menangani registrasi, login, autentikasi (bcrypt), dan manajemen profil pengguna.
+3. **Fleet & Booking Service (Port 3138)**: Layanan terpadu yang mengelola entitas relasional armada (Bus), rute perjalanan (Relation), dan jadwal (Schedule) oleh Admin. Layanan ini juga menangani transaksi pemesanan kursi oleh penumpang dengan menggunakan Database Transaction untuk mencegah race-condition saat pemilihan kursi.
+4. **Expense Service (Port 3139)**: Layanan berbasis PHP (Laravel) untuk mendata pengeluaran operasional perjalanan (tol, bensin, konsumsi kru, dll). Akses dibatasi hanya untuk Admin dan Crew.
+5. **Intelligent ML Service (Port 3140)**: Layanan berbasis Python (Flask) untuk memprediksi/mengestimasi harga ideal tiket secara dinamis berdasarkan model *Machine Learning* (Random Forest) menggunakan data historis jarak, kapasitas, dan status hari libur.
 6. **Notification/Ticket Worker (Background Process)**: Consumer RabbitMQ yang berjalan asinkron untuk memproses antrean pembuatan tiket setelah pemesanan berhasil dicatat.
 
 ## Prasyarat (Prerequisites)
 
 - Node.js (v16 atau lebih baru)
 - PHP (v8.1+) & Composer
+- Python (v3.8+) & pip
 - MySQL Database
 - RabbitMQ Server (berjalan di localhost:5672)
 - PM2 (opsional, untuk menjalankan secara daemon)
@@ -28,7 +29,7 @@ Sistem ini memecah fungsionalitas menjadi beberapa layanan independen yang berko
 3. **Konfigurasi Database**:
    - **Node.js**: Buka `database/connect.js` dan sesuaikan kredensial koneksi database MySQL Anda.
    - **Laravel**: Masuk ke folder `expense-service`, salin file `.env.example` menjadi `.env`, lalu sesuaikan kredensial koneksi database Anda.
-4. **Instalasi Dependensi**: Jalankan skrip otomatis `install_deps.bat` (Windows) atau `./install_deps.sh` (Linux) di root folder untuk menginstal seluruh package Node dan PHP secara massal.
+4. **Instalasi Dependensi**: Jalankan skrip otomatis `install_deps.bat` (Windows) atau `./install_deps.sh` (Linux) di root folder. Skrip ini akan menginstal seluruh package Node, PHP, sekaligus dependensi Python dan melatih model ML secara massal.
 5. **Inisialisasi Database (Seeder)**:
    - **Layanan Utama (Node.js)**: Jalankan `node database/refresh.js`.
    - **Layanan Pengeluaran (Laravel)**: Jalankan `refresh_expense.bat` (Windows) atau `./refresh_expense.sh` (Linux).
@@ -46,7 +47,7 @@ Berikut adalah daftar endpoint lengkap yang tersedia di sistem ini.
 
 ### 1. Auth Service
 
-* **Login (Admin)**
+* **Login (Admin / Passenger / Crew)**
     * **Method:** `POST`
     * **Endpoint:** `/api/auth/login`
     * **Body (JSON):**
@@ -57,23 +58,12 @@ Berikut adalah daftar endpoint lengkap yang tersedia di sistem ini.
         }
         ```
 
-* **Login (Passenger)**
-    * **Method:** `POST`
-    * **Endpoint:** `/api/auth/login`
-    * **Body (JSON):**
-        ```json
-        {
-            "email": "rafly@mail.com",
-            "password": "password123"
-        }
-        ```
-
 * **Get Profile (Me)**
     * **Method:** `GET`
     * **Endpoint:** `/api/auth/me`
     * **Body:** *(Tidak ada)*
 
-### 2. Fleet Service (Buses, Relations, Schedules)
+### 2. Fleet & Booking Service
 
 #### Buses
 * **Create Bus (Admin)**
@@ -128,7 +118,19 @@ Berikut adalah daftar endpoint lengkap yang tersedia di sistem ini.
     * **Method:** `GET`
     * **Endpoint:** `/api/fleet/relations`
 
-#### Schedules
+#### Schedules & ML Estimates
+* **Estimate Schedule Price (Admin - Inter-service Call)**
+    * **Method:** `POST`
+    * **Endpoint:** `/api/fleet/schedules/estimate`
+    * **Body (JSON):**
+        ```json
+        {
+            "bus_id": 1,
+            "relation_id": 1,
+            "is_holiday": 1
+        }
+        ```
+
 * **Create Schedule (Admin)**
     * **Method:** `POST`
     * **Endpoint:** `/api/fleet/schedules`
@@ -146,11 +148,10 @@ Berikut adalah daftar endpoint lengkap yang tersedia di sistem ini.
     * **Method:** `GET`
     * **Endpoint:** `/api/fleet/schedules`
 
-### 3. Booking Service
-
+#### Bookings
 * **Create Booking**
     * **Method:** `POST`
-    * **Endpoint:** `/api/bookings/bookings`
+    * **Endpoint:** `/api/fleet/bookings`
     * **Body (JSON):**
         ```json
         {
@@ -161,15 +162,15 @@ Berikut adalah daftar endpoint lengkap yang tersedia di sistem ini.
 
 * **Get All Bookings**
     * **Method:** `GET`
-    * **Endpoint:** `/api/bookings/bookings`
+    * **Endpoint:** `/api/fleet/bookings`
 
 * **Get Booking by ID**
     * **Method:** `GET`
-    * **Endpoint:** `/api/bookings/bookings/1`
+    * **Endpoint:** `/api/fleet/bookings/1`
 
 * **Update Booking (Change Seat)**
     * **Method:** `PUT`
-    * **Endpoint:** `/api/bookings/bookings/1`
+    * **Endpoint:** `/api/fleet/bookings/1`
     * **Body (JSON):**
         ```json
         {
@@ -179,7 +180,7 @@ Berikut adalah daftar endpoint lengkap yang tersedia di sistem ini.
 
 * **Cancel Booking (Passenger)**
     * **Method:** `PUT`
-    * **Endpoint:** `/api/bookings/bookings/1`
+    * **Endpoint:** `/api/fleet/bookings/1`
     * **Body (JSON):**
         ```json
         {
@@ -189,9 +190,9 @@ Berikut adalah daftar endpoint lengkap yang tersedia di sistem ini.
 
 * **Delete Booking (Admin)**
     * **Method:** `DELETE`
-    * **Endpoint:** `/api/bookings/bookings/1`
+    * **Endpoint:** `/api/fleet/bookings/1`
 
-### 4. Expense Service
+### 3. Expense Service
 
 * **Create Expense (Admin/Crew)**
     * **Method:** `POST`
@@ -230,3 +231,22 @@ Berikut adalah daftar endpoint lengkap yang tersedia di sistem ini.
 * **Delete Expense (Admin/Crew)**
     * **Method:** `DELETE`
     * **Endpoint:** `/api/expenses/1`
+
+### 4. Intelligent ML Service
+
+* **Check ML Service Health**
+    * **Method:** `GET`
+    * **Endpoint:** `/api/ml/health`
+    * **Body:** *(Tidak ada)*
+
+* **Predict Price Directly via Gateway**
+    * **Method:** `POST`
+    * **Endpoint:** `/api/ml/predict`
+    * **Body (JSON):**
+        ```json
+        {
+            "jarak_km": 550.0,
+            "kapasitas": 30,
+            "is_holiday": 1
+        }
+        ```

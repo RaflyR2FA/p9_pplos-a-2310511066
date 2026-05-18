@@ -15,33 +15,38 @@ npm install
 cd ..
 
 echo ""
-echo "[3/7] Menginstal dependensi Fleet Service..."
-cd fleet-service || exit
+echo "[3/7] Menginstal dependensi Fleet dan Booking Service..."
+cd fleet-booking-service || exit
 npm install
 cd ..
 
 echo ""
-echo "[4/7] Menginstal dependensi Booking Service..."
-cd booking-service || exit
-npm install
-cd ..
-
-echo ""
-echo "[5/7] Menginstal dependensi Worker Service..."
+echo "[4/7] Menginstal dependensi Worker Service..."
 cd worker-service || exit
 npm install
 cd ..
 
 echo ""
-echo "[6/7] Menginstal dependensi Database Tools..."
+echo "[5/7] Menginstal dependensi Database Tools..."
 cd database || exit
 npm install
 cd ..
 
 echo ""
-echo "[7/7] Menginstal dependensi Expense Service (Laravel)..."
+echo "[6/7] Menginstal dependensi Expense Service (Laravel)..."
 cd expense-service || exit
 composer install
+cd ..
+
+echo ""
+echo "[7/7] Menginstal dependensi ML Service..."
+cd ml-service || exit
+python3 -m venv venv
+source venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+python3 train_model.py
+deactivate
 cd ..
 
 echo ""

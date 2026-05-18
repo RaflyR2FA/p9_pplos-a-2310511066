@@ -2,9 +2,8 @@
   "info": {
     "_postman_id": "844f15af-c5c9-495e-9c40-415a5f8ee135",
     "name": "Bus Ticketing Microservices API",
-    "description": "Koleksi API untuk pengujian platform pemesanan tiket bus berbasis microservices, lengkap dengan Expense Service.",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "50234389"
+    "description": "Koleksi API terintegrasi untuk platform microservices pemesanan tiket bus, dilengkapi dengan pembatasan Rate Limiting, Expense Service (Laravel), dan Intelligent ML Service (Flask) di bawah satu arsitektur Gateway terpadu.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
@@ -167,7 +166,7 @@
       ]
     },
     {
-      "name": "2. Fleet Service (Buses, Relations, Schedules)",
+      "name": "2. Fleet & Booking Service (Port 3138)",
       "item": [
         {
           "name": "Buses",
@@ -238,55 +237,6 @@
                 }
               },
               "response": []
-            },
-            {
-              "name": "Update Bus (Admin)",
-              "request": {
-                "method": "PUT",
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n    \"plate_number\": \"B 7777 RRR\"\n}"
-                },
-                "url": {
-                  "raw": "{{baseUrl}}/api/fleet/buses/5",
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "api",
-                    "fleet",
-                    "buses",
-                    "5"
-                  ]
-                }
-              },
-              "response": []
-            },
-            {
-              "name": "Delete Bus (Admin)",
-              "request": {
-                "method": "DELETE",
-                "header": [],
-                "url": {
-                  "raw": "{{baseUrl}}/api/fleet/buses/5",
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "api",
-                    "fleet",
-                    "buses",
-                    "5"
-                  ]
-                }
-              },
-              "response": []
             }
           ]
         },
@@ -305,7 +255,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n    \"origin\": \"Jakarta\",\n    \"destination\": \"Bandung\",\n    \"distance_km\": 150.5\n}"
+                  "raw": "{\n    \"origin\": \"Jakarta\",\n    \"destination\": \"Yogyakarta\",\n    \"distance_km\": 550\n}"
                 },
                 "url": {
                   "raw": "{{baseUrl}}/api/fleet/relations",
@@ -343,8 +293,37 @@
           ]
         },
         {
-          "name": "Schedules",
+          "name": "Schedules & ML Estimates",
           "item": [
+            {
+              "name": "Estimate Schedule Price (Admin - Inter-service Call)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"bus_id\": 1,\n    \"relation_id\": 1,\n    \"is_holiday\": 1\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/fleet/schedules/estimate",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "fleet",
+                    "schedules",
+                    "estimate"
+                  ]
+                }
+              },
+              "response": []
+            },
             {
               "name": "Create Schedule (Admin)",
               "request": {
@@ -357,7 +336,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n    \"bus_id\": 1,\n    \"relation_id\": 1,\n    \"departure_time\": \"2026-06-10T08:00:00Z\",\n    \"price\": 150000.00\n}"
+                  "raw": "{\n    \"bus_id\": 1,\n    \"relation_id\": 1,\n    \"departure_time\": \"2026-06-10T08:00:00Z\",\n    \"price\": 750000.00\n}"
                 },
                 "url": {
                   "raw": "{{baseUrl}}/api/fleet/schedules",
@@ -393,161 +372,63 @@
               "response": []
             }
           ]
+        },
+        {
+          "name": "Bookings",
+          "item": [
+            {
+              "name": "Create Booking",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n    \"schedule_id\": 1,\n    \"seat_number\": 12\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/fleet/bookings",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "fleet",
+                    "bookings"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get All Bookings (Filtered by Role)",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/fleet/bookings",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "fleet",
+                    "bookings"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
         }
       ]
     },
     {
-      "name": "3. Booking Service",
-      "item": [
-        {
-          "name": "Create Booking",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"schedule_id\": 1,\n    \"seat_number\": 5\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/bookings/bookings",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "bookings",
-                "bookings"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get All Bookings",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/bookings/bookings",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "bookings",
-                "bookings"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get Booking by ID",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/bookings/bookings/1",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "bookings",
-                "bookings",
-                "1"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Update Booking (Change Seat)",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"seat_number\": 8\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/bookings/bookings/1",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "bookings",
-                "bookings",
-                "1"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Cancel Booking (Passenger)",
-          "request": {
-            "method": "PUT",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n    \"status\": \"Cancelled\"\n}"
-            },
-            "url": {
-              "raw": "{{baseUrl}}/api/bookings/bookings/1",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "bookings",
-                "bookings",
-                "1"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Delete Booking (Admin)",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/bookings/bookings/1",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "bookings",
-                "bookings",
-                "1"
-              ]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "4. Expense Service",
+      "name": "3. Expense Service (Port 3139)",
       "item": [
         {
           "name": "Create Expense (Admin/Crew)",
@@ -593,30 +474,35 @@
             }
           },
           "response": []
-        },
+        }
+      ]
+    },
+    {
+      "name": "4. Intelligent ML Service (Port 3140)",
+      "item": [
         {
-          "name": "Get Expense by ID (Admin/Crew)",
+          "name": "Check ML Service Health",
           "request": {
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/expenses/1",
+              "raw": "{{baseUrl}}/api/ml/health",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "expenses",
-                "1"
+                "ml",
+                "health"
               ]
             }
           },
           "response": []
         },
         {
-          "name": "Update Expense (Admin/Crew)",
+          "name": "Predict Price Directly via Gateway",
           "request": {
-            "method": "PUT",
+            "method": "POST",
             "header": [
               {
                 "key": "Content-Type",
@@ -625,36 +511,17 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n    \"amount\": 250000.00,\n    \"details\": \"Pembayaran tol Cipali + Cikampek\"\n}"
+              "raw": "{\n    \"jarak_km\": 550.0,\n    \"kapasitas\": 30,\n    \"is_holiday\": 1\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/api/expenses/1",
+              "raw": "{{baseUrl}}/api/ml/predict",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
                 "api",
-                "expenses",
-                "1"
-              ]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Delete Expense (Admin/Crew)",
-          "request": {
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/api/expenses/1",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "api",
-                "expenses",
-                "1"
+                "ml",
+                "predict"
               ]
             }
           },
@@ -673,32 +540,10 @@
       }
     ]
   },
-  "event": [
-    {
-      "listen": "prerequest",
-      "script": {
-        "type": "text/javascript",
-        "requests": {},
-        "exec": [
-          ""
-        ]
-      }
-    },
-    {
-      "listen": "test",
-      "script": {
-        "type": "text/javascript",
-        "requests": {},
-        "exec": [
-          ""
-        ]
-      }
-    }
-  ],
   "variable": [
     {
       "key": "baseUrl",
-      "value": "http://localhost:6600"
+      "value": "http://localhost:3136"
     },
     {
       "key": "token",
